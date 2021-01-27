@@ -27,7 +27,6 @@ import Autohost
 import Music                
 #import Control
 #import Commands
-#import Backup
 import Help
 from Functions import botadmin
 import random as r
@@ -52,10 +51,6 @@ def write():
     ORG.write()
     
 async def periodicsave(t, i):
-#    if i == 48:
-#        i = 0
-#        await Backup.backup(bot, logchannel)
-#    i += 1
     await nest_asyncio.asyncio.sleep(t)
     # if not logchannel == None:
     #     await logchannel.send('Writing to json...')
@@ -141,8 +136,9 @@ async def on_message(message):
 
     if not messagearray == None:
         if messagearray[0].lower() == 'changes':
-            await message.channel.send('1/27/2021:\n```-Roles can be assigned by mentioning them rather than spelling their name for org settings.\n-Most commands should be non-case sensitive, including the prefix. Excludes items in dungeon battle.```')
-            
+            m = ''
+            m += '1/27/2021:\n```-Roles can be assigned by mentioning them rather than spelling their name for org settings.\n-Most commands should be non-case sensitive, including the prefix. Excludes items in dungeon battle.```'
+            await message.channel.send(m)
         elif messagearray[0].lower() == 'logout' and botadmin(message.author):
                 write()
                 await bot.logout()
@@ -168,7 +164,7 @@ async def on_message(message):
 #        elif messagearray[0].lower() == 'maze': #Multi-Dimensional Maze
 #            await Maze.MazeRespond(messagearray, message)
 #excluded this because I don't think there's interest for it and it can freeze the bot
-        elif messagearray[0].lower() == 'coordination': #Dungeon battle
+        elif messagearray[0].lower() == 'coordination':
             await Coordination.CoordinationRespond(messagearray, message)
         elif messagearray[0].lower() == 'utils':
             await Utils.UtilsRespond(messagearray, message)
@@ -187,6 +183,7 @@ async def on_message(message):
             await Help.HelpRespond(messagearray, message)
     #        elif messagearray[0] == 'Commands' and message.author.guild_permissions.administrator:
     #            await Commands.CommandsRespond(messagearray, message)
+    #Custom commands system like other bots (dyno) have. Not really any point in having it active.
         elif messagearray[0].lower() == 'echo' and message.author.guild_permissions.administrator:
             s = ""
             for i in messagearray[1:]:
