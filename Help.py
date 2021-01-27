@@ -20,6 +20,7 @@ async def HelpRespond(messagearray, message):
         m += 'Contains details of a timer, similar to a chess clock, that counts down the time for different teams.\n'
         m += '**Coordination**\n'
         m += 'Contains details of the coordination game, in which everyone with a particular role must work together to complete tasks before they expire.\n'
+        m += 'Bot code can be seen at github.com/Nightsquared/HostingBot.\n'
         
     else:
         if messagearray[1] == 'Utils':
