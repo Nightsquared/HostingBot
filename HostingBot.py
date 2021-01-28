@@ -149,7 +149,7 @@ async def on_message(message):
             await message.channel.send("Report recorded.")
         elif messagearray[0].lower() == 'status' and botadmin(message.author):#I use this to make sure I don't log out the bot while someone is using it
         #it doesn't show coordination but nobody uses coordination so whatever
-            if len(messagearray) == 0:
+            if len(messagearray) == 1:
                 await status(message)
             else:
                 await activeservers(message)#need this so I can figure out what servers have bot stuff active when I need to shut the bot down
