@@ -33,7 +33,7 @@ import random as r
 
 first = True
 
-logguild = 'Test server'
+logguild = 576830979436445716
 logchannelname = 'log'
 logchannel = None
 
@@ -71,6 +71,10 @@ async def status(message):
     await message.channel.send('There are ' + str(int(len(BaW.bawplayers)/2)) + ' BaW matches.')
     await message.channel.send('There are ' + str(Battle.numberOfMatches()) + ' Battle matches.')
     await message.channel.send('There are ' + str(len(Clock.clocks)) + ' Clocks.')
+    for i in bot.guilds:
+        for j in i.channels:
+            if j.name.lower().startswith('battle-announcements'):
+                print(i.name)
     
 async def activeservers(message):
     m = 'Battle Servers:\n'
@@ -102,7 +106,7 @@ async def on_ready():
                 await Battle.setup(guild)
             except:
                 pass
-            if guild.name == logguild:
+            if guild.id == logguild:
                 for channel in guild.channels:
                     if channel.name == logchannelname:
                         global logchannel
@@ -137,8 +141,9 @@ async def on_message(message):
     if not messagearray == None:
         if messagearray[0].lower() == 'changes':
             m = ''
-            m += '1/27/2021:\n```-Roles can be assigned by mentioning them rather than spelling their name for org settings.\n-Most commands should be non-case sensitive, including the prefix. Excludes items in dungeon battle.```'
+            m += '1/27/2021:\n``` -Roles can be assigned by mentioning them rather than spelling their name for org settings.\n -Most commands should be non-case sensitive, including the prefix. Excludes items in dungeon battle.\n -Bot code can now be accessed on github: github.com/Nightsquared/HostingBot```'
             await message.channel.send(m)
+            
         elif messagearray[0].lower() == 'logout' and botadmin(message.author):
                 write()
                 await bot.logout()
@@ -158,7 +163,7 @@ async def on_message(message):
         elif messagearray[0].lower() == 'baw': # Black and White
             await BaW.BaWRespond(messagearray, message)
             #nobody uses this anymore :(
-            #also the first thing I did so if you want to see some particularly terrible code go here
+            #also the first thing I coded so if you want to see some particularly terrible code go here
         elif messagearray[0].lower() == 'battle': #Dungeon battle
             await Battle.BattleRespond(messagearray, message)
 #        elif messagearray[0].lower() == 'maze': #Multi-Dimensional Maze
