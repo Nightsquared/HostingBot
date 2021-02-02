@@ -2,7 +2,7 @@
 #Basically, there are so many places where I assumed rectangular dungeons that changing it would require reviewing the entire code and rewriting a ton of it
 #Considering the quality of this code, this isn't a terrible idea. But I also like having weekends during uni.
 
-#there's a lot of complicated bullshit going on in here, but creating new items is pretty simple at least. find the item class (and its children) to see examples
+#there's a lot of complicated stuff going on in here, but creating new items is pretty simple at least. find the item class (and its children) to see examples
 
 import discord
 import random
