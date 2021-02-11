@@ -2,7 +2,16 @@ import discord
 import json
 from Functions import botadmin
 import datetime
+from PyDictionary import PyDictionary
+import random as r
+dictionary=PyDictionary()
 orgs = {}
+
+wordfile = open('wordlist.txt', 'r')
+wordlist = []
+for i in wordfile:
+    wordlist.append(i[:-1])
+wordfile.close()
 
 class org:
     def __init__(self, guild, Episode = '1', SpectatorRoleNames = [], TribeRoleNames = [], AllianceCategoryName = None, Description = None, RequestableRoleNames = [], Announcement = '{tribeping} requested by {requester}'):
@@ -20,6 +29,7 @@ class org:
         self.Announcement = Announcement
         self.RequestableRoleNames = RequestableRoleNames
         self.RequestableRoles = [] #Can be roles or members
+        self.RandomNames = False
         for i in SpectatorRoleNames:
             self.SpectatorRoles.append(discord.utils.get(guild.roles, name=i))
         for i in TribeRoleNames:
@@ -35,7 +45,7 @@ class org:
         self.RequestableRoles = [discord.utils.get(guild.roles, name=i) for i in self.RequestableRoleNames]
         
     def jsondict(self):
-        return {'guildID':self.guildID, 'Announcement':self.Announcement, 'RequestableRoleNames':self.RequestableRoleNames, 'Episode':self.Episode, 'SpectatorRoleNames':self.SpectatorRoleNames, 'Description':self.Description, 'AllianceCategoryName':self.AllianceCategoryName, 'TribeRoleNames':self.TribeRoleNames, 'RequestRoleMode':self.RequestRoleMode}
+        return {'guildID':self.guildID, 'Announcement':self.Announcement, 'RequestableRoleNames':self.RequestableRoleNames, 'Episode':self.Episode, 'SpectatorRoleNames':self.SpectatorRoleNames, 'Description':self.Description, 'AllianceCategoryName':self.AllianceCategoryName, 'TribeRoleNames':self.TribeRoleNames, 'RequestRoleMode':self.RequestRoleMode, 'RandomNames':self.RandomNames}
             
     def update(self, SpectatorRoleNames = None, TribeRoleNames = None, Episode = None, AllianceCategoryName = None, Description = None, RequestableRoleNames = None, Announcement = None):
         if not SpectatorRoleNames == None:
@@ -86,6 +96,7 @@ def setup(bot):
         #print(t)
         orgs[k].update(SpectatorRoleNames = t['SpectatorRoleNames'], Episode = t['Episode'], Description = t['Description'], AllianceCategoryName = t['AllianceCategoryName'], TribeRoleNames = t['TribeRoleNames'], RequestableRoleNames = t['RequestableRoleNames'], Announcement = t['Announcement'])
         orgs[k].RequestRoleMode = t['RequestRoleMode']
+        orgs[k].RandomNames = t['RandomNames']
 def write():
     file = open('orgs.json', 'w')
     orgsdict = {k:orgs[k].jsondict() for k in orgs.keys()}
@@ -135,6 +146,7 @@ async def ORGRespond(messagearray, message):
         except:
             a += '\nAnnouncement: none'
         a += '\nRequest Mode: ' + ('discord usernames', 'individual roles')[int(t.RequestRoleMode)]
+        a += '\nRandom names: ' + ('disabled', 'enabled')[int(t.RandomNames)]
         await message.channel.send(a)
     if messagearray[1] == "Dict" and botadmin(message.author):
         await message.channel.send(orgs[str(message.guild.id)].__dict__)
@@ -158,8 +170,14 @@ async def ORGRespond(messagearray, message):
                 await message.channel.send('The tribes were successfully entered.')
                 
     if messagearray[1].lower() == "requestmode" and message.author.guild_permissions.administrator:
-        orgs[str(message.guild.id)].RequestRoleMode = not orgs[str(message.guild.id)].RequestRoleMode
-        await message.channel.send('The request mode is ' + ('discord usernames', 'individual roles')[int(t.RequestRoleMode)])
+        mime = orgs[str(message.guild.id)]
+        mime.RequestRoleMode = not mime.RequestRoleMode
+        await message.channel.send('The request mode is ' + ('discord usernames', 'individual roles')[int(mime.RequestRoleMode)])
+    
+    if messagearray[1].lower() == "randomnames" and message.author.guild_permissions.administrator:
+        mime = orgs[str(message.guild.id)]
+        mime.RandomNames = not mime.RandomNames
+        await message.channel.send('Random names are now ' + ('disabled', 'enabled')[int(mime.RandomNames)])
         
     if messagearray[1].lower() == "requestables" and message.author.guild_permissions.administrator:
         if len(mentions) > 0:#mention every role to be assigned
@@ -233,6 +251,7 @@ async def ORGRespond(messagearray, message):
         
 async def AllianceResponse(messagearray, message):#message does the same as ctx here, messagearray is the parsed message content by spaces
     t = orgs[str(message.guild.id)] #holds server-specific alliance making information
+    global wordlist
     if t.RequestRoleMode: #alliance making based on individual roles
         Requester = None#first check if author is a contestant; then the author becomes the requester
         Auth = False
@@ -287,8 +306,13 @@ async def AllianceResponse(messagearray, message):#message does the same as ctx 
                 return
             ChannelName = ""
             ChannelTopic = ""
-            for role in AllianceMemberRoles:
-                ChannelName += role.name.lower() + "-"
+            if t.RandomNames:
+                for i in range(r.choice([2, 3, 3, 4, 4, 5, 6])):
+                    word = r.choice(wordlist)
+                    ChannelName += word + "-"
+            else:
+                for role in AllianceMemberRoles:
+                    ChannelName += role.name.lower() + "-"
             ChannelName = ChannelName[:-1]
             ChannelTopic = getChannelTopic(message, t.Description, [a.name for a in AllianceMemberRoles], ThisTribeRole.name, Requester.name, t.Episode)
             Perms = {}
@@ -343,8 +367,13 @@ async def AllianceResponse(messagearray, message):#message does the same as ctx 
                 return
             channelname = ""
             ChannelTopic = ""
-            for member in AllianceMembers:
-                channelname += member.name.lower() + "-"
+            if t.RandomNames:
+                for i in range(r.choice([2, 3, 3, 4, 4, 5, 6])):
+                    word = r.choice(wordlist)
+                    ChannelName += word + "-"
+            else:
+                for member in AllianceMembers:
+                    channelname += member.name.lower() + "-"
             channelname = channelname[:-1]
             ChannelTopic = getChannelTopic(message, t.Description, [a.name for a in AllianceMembers], ThisTribeRole.name, Requester.name, t.Episode)
             Perms = {}

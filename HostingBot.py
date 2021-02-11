@@ -21,7 +21,7 @@ import Battle
 import ORG
 import Utils
 import Clock
-import Maze
+#import Maze
 import Coordination
 import Autohost
 import Music                
@@ -141,12 +141,28 @@ async def on_message(message):
     if not messagearray == None:
         if messagearray[0].lower() == 'changes':
             m = ''
+            m += '2/7/2021:\n``` -Sent out usage survey to server owners. Also added a function to contact server owners which I don\'t envision ever using.```'
             m += '1/27/2021:\n``` -Roles can be assigned by mentioning them rather than spelling their name for org settings.\n -Most commands should be non-case sensitive, including the prefix. Excludes items in dungeon battle.\n -Bot code can now be accessed on github: github.com/Nightsquared/HostingBot```'
             await message.channel.send(m)
             
         elif messagearray[0].lower() == 'logout' and botadmin(message.author):
                 write()
                 await bot.logout()
+        elif messagearray[0].lower() == 'owners' and botadmin(message.author):#message server owners of servers this bot is in. Have this disabled by default because...duh
+                ownerlist = []
+                for i in bot.guilds:
+                    owner = i.owner
+                    if not owner in ownerlist:
+                        ownerlist.append(owner)
+                        if botadmin(owner):#for testing stuff, sends only to myself
+                            channel = owner.dm_channel
+                            if channel is None:
+                                channel = await owner.create_dm()
+                            s = ""
+                            for i in messagearray[1:]:
+                                s += i + " "
+                            await channel.send(s)
+                            
         elif messagearray[0].lower() == 'write' and botadmin(message.author): #org commands
             write()
         elif messagearray[0].lower() == 'report':
