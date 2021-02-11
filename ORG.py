@@ -2,9 +2,7 @@ import discord
 import json
 from Functions import botadmin
 import datetime
-from PyDictionary import PyDictionary
 import random as r
-dictionary=PyDictionary()
 orgs = {}
 
 wordfile = open('wordlist.txt', 'r')
