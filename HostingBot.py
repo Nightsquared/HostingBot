@@ -141,7 +141,8 @@ async def on_message(message):
     if not messagearray == None:
         if messagearray[0].lower() == 'changes':
             m = ''
-            m += '2/7/2021:\n``` -Sent out usage survey to server owners. Also added a function to contact server owners which I don\'t envision ever using.```'
+            m += '2/10/2021:\n``` -Added ability to have alliances be randomly named rather than show the names of members, using h!org randomnames. This might still be buggy```'
+            #m += '2/7/2021:\n``` -Sent out usage survey to server owners. Also added a function to contact server owners which I don\'t envision ever using.```'#jk haven't done this yet
             m += '1/27/2021:\n``` -Roles can be assigned by mentioning them rather than spelling their name for org settings.\n -Most commands should be non-case sensitive, including the prefix. Excludes items in dungeon battle.\n -Bot code can now be accessed on github: github.com/Nightsquared/HostingBot```'
             await message.channel.send(m)
             
