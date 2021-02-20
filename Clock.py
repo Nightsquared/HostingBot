@@ -16,6 +16,8 @@ class Clock():
         self.channel = channel
         self.messages = []
         self.ticktime = .4
+        self.paused = False
+        self.pausemessages = []
         
     async def start(self):
         for i in self.teams:
@@ -30,9 +32,11 @@ class Clock():
             await self.tick()
         
     async def tick(self):
+        #print(self.times)
+        #print(self.abstimes)
+        #print(self.currentabsturntime)
         #self.times[self.currentteamindex] -= 1
-        if self.update():
-            #print(self.currentabsturntime)
+        if not self.paused and self.update():
             await self.messages[self.currentteamindex].edit(content = (self.currentteam.name + " time: " + time(self.times[self.currentteamindex])))
             if self.times[self.currentteamindex] < 1:
                 await self.channel.send(self.currentteam.name + " ran out of time.")
@@ -40,6 +44,8 @@ class Clock():
                 clocks.remove(self)
                 for i in self.messages:
                     await i.unpin()
+                for i in self.pausemessages:
+                    await i.delete()
                 return
         
     async def turn(self, message, stop = False):
@@ -50,6 +56,8 @@ class Clock():
             clocks.remove(self)
             for i in self.messages:
                 await i.unpin() 
+            for i in self.pausemessages:
+                    await i.delete()
             return
         #self.interrupt += 1
         self.currentteamindex += 1
@@ -59,7 +67,28 @@ class Clock():
         await self.channel.send(self.currentteam.name + ", it is your turn")
 #        await sy.asyncio.sleep(self.ticktime)
 #        await self.tick()
-    
+
+    async def pause(self, message):
+        self.paused = True
+        self.update()
+        await self.messages[self.currentteamindex].edit(content = (self.currentteam.name + " time: " + time(self.times[self.currentteamindex])))
+        self.pausemessages.append(await self.channel.send("Timer paused by " + str(message.author.name) + '.'))
+        if self.times[self.currentteamindex] < 1:
+            await self.channel.send(self.currentteam.name + " ran out of time.")
+            global clocks
+            clocks.remove(self)
+            for i in self.messages:
+                await i.unpin()
+            for i in self.pausemessages:
+                await i.delete()
+            return
+        
+    async def unpause(self, message):
+        thistime = t.time()
+        self.abstimes[self.currentteamindex] += thistime - self.currentabsturntime
+        self.paused = False
+        self.pausemessages.append(await self.channel.send("Timer unpaused by " + str(message.author.name) + '.'))
+        
     def update(self):
         r = False
         thistime = t.time()
@@ -102,6 +131,15 @@ async def ClockRespond(messagearray, message):
             if i.channel == message.channel and (i.currentteam == message.author or i.currentteam in message.author.roles or message.author.guild_permissions.administrator):
                 await i.turn(message, stop = True)
         return
+    if messagearray[1].lower() == "pause":
+        for i in clocks:
+            if i.channel == message.channel and (i.currentteam == message.author or i.currentteam in message.author.roles or message.author.guild_permissions.administrator):
+                await i.pause(message)
+        return
+    if messagearray[1].lower() == "unpause":
+        for i in clocks:
+            if i.channel == message.channel and (i.currentteam == message.author or i.currentteam in message.author.roles or message.author.guild_permissions.administrator):
+                await i.unpause(message)
 #    if messagearray[1] == "AppClockTest":
 #        clocks.append(AppClock(30, message.channel, 'the time left is {time}'))
 #        done = await clocks[-1].start()
@@ -115,9 +153,12 @@ async def ClockRespond(messagearray, message):
     if len(teams) > 0:
         clocks.append(Clock(int(messagearray[1]), teams, message.channel))
         await clocks[-1].start()
-    else:                   
-        clocks.append(Clock(int(messagearray[1]), [message.author], message.channel))
-        await clocks[-1].start()
+    else:       
+        try:            
+            clocks.append(Clock(int(messagearray[1]), [message.author], message.channel))
+            await clocks[-1].start()
+        except:
+            pass
 
 class AppClock():
     def __init__(self, startingtime, channel, message, donemessage = "Time's up!", pin = True):

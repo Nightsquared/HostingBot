@@ -26,7 +26,7 @@ import Coordination
 import Autohost
 import Music                
 #import Control
-#import Commands
+import Commands
 import Help
 from Functions import botadmin
 import random as r
@@ -47,7 +47,7 @@ for i in songfile:
 songfile.close()
     
 def write():
-    #Commands.write()
+    Commands.write()
     ORG.write()
     
 async def periodicsave(t, i):
@@ -99,7 +99,7 @@ async def on_ready():
     global first
     if first:
         first = False
-        #Commands.setup(bot)
+        Commands.setup(bot)
         ORG.setup(bot)
         for guild in bot.guilds:
             try:
@@ -121,8 +121,8 @@ async def on_message(message):
         await Battle.onMessage(message)       
         await Coordination.onMessage(message)       
 
-#    if message.content.startswith('!'):
-#        await Commands.Command(message)
+    if message.content.startswith('!'):
+        await Commands.Command(message)
     messagearray = None
     if testing:
         if message.content.lower().startswith('z!'):
@@ -141,7 +141,8 @@ async def on_message(message):
     if not messagearray == None:
         if messagearray[0].lower() == 'changes':
             m = ''
-            m += '2/10/2021:\n``` -Added ability to have alliances be randomly named rather than show the names of members, using h!org randomnames. This might still be buggy```'
+            m += '2/20/2021:\n``` -Fixed a bug (hopefully) causing errors in the alliance maker. \n -Added pausible timers using H!Clock Pause. \n -Added a command for generation a set of numbers (between 0 and 10 inclusive), h!utils numberset\n -Added countcheck and count function to utils, for checking a stream of integers counting up and for counting up respectively. (please don\'t abuse the later)\n -Brought back custom commands because of limitations of Dyno custom commands.```'
+            m += '2/10/2021:\n``` -Added ability to have alliances be randomly named rather than show the names of members, using h!org randomnames. This might still be buggy.```'
             #m += '2/7/2021:\n``` -Sent out usage survey to server owners. Also added a function to contact server owners which I don\'t envision ever using.```'#jk haven't done this yet
             m += '1/27/2021:\n``` -Roles can be assigned by mentioning them rather than spelling their name for org settings.\n -Most commands should be non-case sensitive, including the prefix. Excludes items in dungeon battle.\n -Bot code can now be accessed on github: github.com/Nightsquared/HostingBot```'
             await message.channel.send(m)
@@ -149,6 +150,7 @@ async def on_message(message):
         elif messagearray[0].lower() == 'logout' and botadmin(message.author):
                 write()
                 await bot.logout()
+        #elif messagearray[0].lower() == 'testinfo' and botadmin(message.author):#just used for testing when I want random info
         # elif messagearray[0].lower() == 'owners' and botadmin(message.author):#message server owners of servers this bot is in. Have this disabled by default because...duh
         #         ownerlist = []
         #         for i in bot.guilds:
@@ -203,8 +205,8 @@ async def on_message(message):
             await message.channel.send('https://discordapp.com/api/oauth2/authorize?client_id=624103123639730176&permissions=8&scope=bot')
         elif messagearray[0].lower() == 'help':
             await Help.HelpRespond(messagearray, message)
-    #        elif messagearray[0] == 'Commands' and message.author.guild_permissions.administrator:
-    #            await Commands.CommandsRespond(messagearray, message)
+        elif messagearray[0].lower() == 'commands' and message.author.guild_permissions.administrator:
+            await Commands.CommandsRespond(messagearray, message)
     #Custom commands system like other bots (dyno) have. Not really any point in having it active.
         elif messagearray[0].lower() == 'echo' and message.author.guild_permissions.administrator:
             s = ""
@@ -226,10 +228,11 @@ async def on_message(message):
                 await logchannel.send('https://www.youtube.com/watch?v=' + song)
                 
                 
+                
 @bot.event
 async def on_guild_join(guild):
     ORG.addGuild(guild)
-    #Commands.addGuild(guild)
+    Commands.addGuild(guild)
     await Battle.setup(guild)
 @bot.event
 async def on_guild_remove(guild):

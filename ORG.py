@@ -312,7 +312,10 @@ async def AllianceResponse(messagearray, message):#message does the same as ctx 
                 for role in AllianceMemberRoles:
                     ChannelName += role.name.lower() + "-"
             ChannelName = ChannelName[:-1]
-            ChannelTopic = getChannelTopic(message, t.Description, [a.name for a in AllianceMemberRoles], ThisTribeRole.name, Requester.name, t.Episode)
+            try:
+                ChannelTopic = getChannelTopic(message, t.Description, [a.name for a in AllianceMemberRoles], ThisTribeRole.name, Requester.name, t.Episode)
+            except:
+                ChannelTopic = 'No topic set'
             Perms = {}
             for role in AllianceMemberRoles:
                 Perms.update({role:discord.PermissionOverwrite(read_messages = True, send_messages = True, read_message_history=True)})

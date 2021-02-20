@@ -28,6 +28,9 @@ async def HelpRespond(messagearray, message):
                 m += 'Preface these commands with `H!Utils` i.e. `H!Utils Ping`\n'
                 m += '**Ping**\n'
                 m += 'The bot will give a simple response, confirming that it is online and responding to commands.\n'
+                m += '**Numberset**\n'
+                m += 'produces a set of 4 numbers (by default) from 0 to 10 inclusive (mainly for use for the 24 game). You can supply an integer as an argument for different set sizes.\n'
+                m += '**--Admin Commands--**\n'
                 m += '**Perm**\n'
                 m += 'Sets roles to have the permission set stated in the channel the message was sent in. Permissions can be:\n'
                 m += 'Read - The role(s) can read but not send messages in the channel.\n'
@@ -35,6 +38,10 @@ async def HelpRespond(messagearray, message):
                 m += 'Hide - The channel is specifically hidden from the role(s).\n'
                 m += 'Remove - The role(s) is given no particular permissions in the channel. Any permissions it did have are removed.\n'
                 m += 'Example: `H!Utils Perm Read Spectator Castaway`'
+                m += '**Countcheck**\n'
+                m += 'To be used in a counting channel, where people count up by one. The bot will look for and post non-integer messages or integers where the last integer was not one less. You can pass in role pings as arguments to tell the bot to only check messages from people with those roles. This can take a while if there are a lot of messages.\n'
+                m += '**Count**\n'
+                m += 'counts up to the number specified, or from a number specified to a different number if two numbers are given. Obviously this takes a long time with large numbers, so don\'t abuse it.\n'
         elif messagearray[1] == 'ORG':
             if len(messagearray) == 2:
                 m += '**--Setup--**\n'
@@ -72,6 +79,8 @@ async def HelpRespond(messagearray, message):
                 m += 'If used by someone with the role that the timer is currently on, this will stop their time from counting down and start the next roles\'s. If there is only one role it stops the time.\n'
                 m += '**Stop**\n'
                 m += 'Stops the timer altogether.\n'
+                m += '**Pause**\n'
+                m += 'Pauses the timer. The timer can be unpaused with `h!clock unpause`. Untested for timers with multiple teams.\n'
                 m += 'Example: `H!Clock 180 team1 team2` will start a 3-minute clock for team1 and team2. team1 and team2 need to be roles in this case.'
         elif messagearray[1] == 'Battle':
             if len(messagearray) == 2:
@@ -219,7 +228,7 @@ async def HelpRespond(messagearray, message):
                 m += 'For example: `Enter t-w-b` in area 2. This means you should enter twb (without dashes) in the channel called area-2.\n'
                 m += '**--Game Control-- (only usable by admins)**\n'
                 m += 'Setup: sets up a coordination game with the given role, number of rooms, and spectator roles.\n'
-                m += 'Example: `C!Coordination Setup 6 TribeA Spectator Jury` to create a coordination game with 6 rooms, with TribeA as players and Spectator and Jury as spectators.\n'
+                m += 'Example: `H!Coordination Setup 6 TribeA Spectator Jury` to create a coordination game with 6 rooms, with TribeA as players and Spectator and Jury as spectators.\n'
                 m += 'Start: Starts the game.\n'
                 m += 'End: Ends the game and deletes the associated channels.\n'
     await message.channel.send(m)

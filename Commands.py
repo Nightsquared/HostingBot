@@ -20,20 +20,22 @@ def removeGuild(Guild):
 
 async def CommandsRespond(messagearray, message):
     guildID = str(message.guild.id)
-    if messagearray[1] == 'Add':
+    if messagearray[1].lower() == 'add':
         s = ""
         for i in messagearray[3:]:
             s += i.replace('\\n', '\n') + " "
         messagedict[guildID].update({messagearray[2]:s})
-    elif messagearray[1] == 'List':
+    elif messagearray[1].lower() == 'list':
         m = ''
         for i in messagedict[guildID].keys():
             m += '!' + i + '\n'
+        if m == '':
+            m = 'No custom commands'
         await message.channel.send(m)
-    elif messagearray[1] == 'Remove':
+    elif messagearray[1].lower() == 'remove':
         for i in messagearray[2:]:
             del messagedict[guildID][i]
-    elif messagearray[1] == 'Write' and botadmin(message.author):
+    elif messagearray[1].lower() == 'write' and botadmin(message.author):
         write()
 async def Command(message):
     mc = message.content.split()[0][1:]
