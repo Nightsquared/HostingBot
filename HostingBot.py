@@ -27,9 +27,11 @@ import Autohost
 import Music                
 #import Control
 import Commands
+import Comms
 import Help
 from Functions import botadmin
 import random as r
+import sys
 
 first = True
 
@@ -49,6 +51,7 @@ songfile.close()
 def write():
     Commands.write()
     ORG.write()
+    Comms.write()
     
 async def periodicsave(t, i):
     await nest_asyncio.asyncio.sleep(t)
@@ -101,6 +104,7 @@ async def on_ready():
         first = False
         Commands.setup(bot)
         ORG.setup(bot)
+        await Comms.setup(bot)
         for guild in bot.guilds:
             try:
                 await Battle.setup(guild)
@@ -141,10 +145,8 @@ async def on_message(message):
     if not messagearray == None:
         if messagearray[0].lower() == 'changes':
             m = ''
-            m += '2/20/2021:\n``` -Fixed a bug (hopefully) causing errors in the alliance maker. \n -Added pausible timers using H!Clock Pause. \n -Added a command for generation a set of numbers (between 0 and 10 inclusive), h!utils numberset\n -Added countcheck and count function to utils, for checking a stream of integers counting up and for counting up respectively. (please don\'t abuse the later)\n -Brought back custom commands because of limitations of Dyno custom commands.```'
-            m += '2/10/2021:\n``` -Added ability to have alliances be randomly named rather than show the names of members, using h!org randomnames. This might still be buggy.```'
-            #m += '2/7/2021:\n``` -Sent out usage survey to server owners. Also added a function to contact server owners which I don\'t envision ever using.```'#jk haven't done this yet
-            m += '1/27/2021:\n``` -Roles can be assigned by mentioning them rather than spelling their name for org settings.\n -Most commands should be non-case sensitive, including the prefix. Excludes items in dungeon battle.\n -Bot code can now be accessed on github: github.com/Nightsquared/HostingBot```'
+            m += '5/23/21: Added comms module. This will be tested in Sunvivor season 11-go there for details: https://discord.gg/b6Eh7BmZt5 \n'
+            m += 'I also reinstated support for custom commands. In the past I excluded custom commands on the basis that using mainstream discord bots was the better option, but recently said bots have placed limits on custom command usage. Use `H!Help Commands` for details.'
             await message.channel.send(m)
             
         elif messagearray[0].lower() == 'logout' and botadmin(message.author):
@@ -190,6 +192,8 @@ async def on_message(message):
 #excluded this because I don't think there's interest for it and it can freeze the bot
         elif messagearray[0].lower() == 'coordination':
             await Coordination.CoordinationRespond(messagearray, message)
+        elif messagearray[0].lower() == 'comms':
+            await Comms.CommsRespond(messagearray, message)
         elif messagearray[0].lower() == 'utils':
             await Utils.UtilsRespond(messagearray, message)
         elif messagearray[0].lower() == 'clock':
@@ -213,6 +217,34 @@ async def on_message(message):
             for i in messagearray[1:]:
                 s += i + " "
             await message.channel.send(s)
+        elif messagearray[0].lower() == 'channelecho' and message.author.guild_permissions.administrator:
+            cha=None
+            for i in message.guild.channels:
+                if i.name == messagearray[1]:
+                    cha = i
+            if cha==None:
+                return
+            s = ""
+            for i in messagearray[2:]:
+                s += i + " "
+            await cha.send(s)
+        elif messagearray[0].lower() == 'guildecho' and botadmin(message.author):
+            gu = None
+            for i in bot.guilds:
+                if i.name == messagearray[1]:
+                    gu = i
+            if gu == None:
+                return
+            cha=None
+            for i in gu.channels:
+                if i.name == messagearray[2]:
+                    cha = i
+            if cha==None:
+                return
+            s = ""
+            for i in messagearray[3:]:
+                s += i + " "
+            await cha.send(s)
         elif messagearray[0].lower() == 'banger':
             await message.channel.send('https://www.youtube.com/watch?v=' + r.choice(songlist))
         elif messagearray[0].lower() == 'addsong':
@@ -227,7 +259,23 @@ async def on_message(message):
             else:
                 await logchannel.send('https://www.youtube.com/watch?v=' + song)
                 
-                
+# @bot.event
+# async def on_error(event, *args, **kwargs):
+#     message = args[0]
+#     await message.channel.send("There was an error.")
+#     info = sys.exc_info()
+#     print(info)
+#     print(info[0])
+#     print(info[1])
+#     tb = info[2]
+#     print(tb)
+#     print(tb.tb_frame)
+#     print(tb.tb_lineno)
+#     print(tb.tb_lasti)
+#     print('Error in server ' + message.guild.name)
+#     print(str(event))
+#     print(str(args))
+#     print(str(kwargs))
                 
 @bot.event
 async def on_guild_join(guild):
@@ -237,5 +285,5 @@ async def on_guild_join(guild):
 @bot.event
 async def on_guild_remove(guild):
     ORG.removeGuild(guild)
-        
+    
 bot.run(token)

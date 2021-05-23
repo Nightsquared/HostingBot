@@ -3,6 +3,7 @@ import json
 from Functions import botadmin
 import datetime
 import random as r
+import Comms
 orgs = {}
 
 wordfile = open('wordlist.txt', 'r')
@@ -315,7 +316,7 @@ async def AllianceResponse(messagearray, message):#message does the same as ctx 
             try:
                 ChannelTopic = getChannelTopic(message, t.Description, [a.name for a in AllianceMemberRoles], ThisTribeRole.name, Requester.name, t.Episode)
             except:
-                ChannelTopic = 'No topic set'
+                ChannelTopic = '-'
             Perms = {}
             for role in AllianceMemberRoles:
                 Perms.update({role:discord.PermissionOverwrite(read_messages = True, send_messages = True, read_message_history=True)})
@@ -339,6 +340,7 @@ async def AllianceResponse(messagearray, message):#message does the same as ctx 
             if i in message.author.roles and ((len(t.RequestableRoles) == 0) or (not len(t.RequestableRoles) == 0 and Requester in t.RequestableRoles)):
                 Requester = message.author
                 Auth = True
+                AllianceMembers.append(Requester)
         if message.author.guild_permissions.administrator:
             Auth = True
             Requester = t.guild.get_member_named(messagearray[2].capitalize())
@@ -356,6 +358,7 @@ async def AllianceResponse(messagearray, message):#message does the same as ctx 
                     return
                 if not member in AllianceMembers:
                     AllianceMembers.append(member)
+            print(AllianceMembers)
             for OtherMember in AllianceMembers[1:]:
                 if not ThisTribeRole in OtherMember.roles:
                     await message.channel.send("One of the alliance members is not on the requester's tribe.")
@@ -376,10 +379,17 @@ async def AllianceResponse(messagearray, message):#message does the same as ctx 
                 for member in AllianceMembers:
                     channelname += member.name.lower() + "-"
             channelname = channelname[:-1]
-            ChannelTopic = getChannelTopic(message, t.Description, [a.name for a in AllianceMembers], ThisTribeRole.name, Requester.name, t.Episode)
+            try:
+                ChannelTopic = getChannelTopic(message, t.Description, [a.name for a in AllianceMembers], ThisTribeRole.name, Requester.name, t.Episode)
+            except:
+                ChannelTopic = '-'
             Perms = {}
             for member in AllianceMembers:
-                Perms.update({member:discord.PermissionOverwrite(read_messages = True, send_messages = True, read_message_history=True)})
+                print(str(Comms.checkUser(member, message.guild)))
+                if Comms.checkUser(member, message.guild) is False:
+                    Perms.update({member:discord.PermissionOverwrite(read_messages = True, send_messages = False, read_message_history=True, add_reactions = False)})
+                else:
+                    Perms.update({member:discord.PermissionOverwrite(read_messages = True, send_messages = True, read_message_history=True)})
             for role in t.SpectatorRoles:
                 Perms.update({role:discord.PermissionOverwrite(read_messages = True, send_messages = False, read_message_history=True)})
             Perms.update({message.guild.default_role:discord.PermissionOverwrite(read_messages=False)})
@@ -457,7 +467,7 @@ def getAnnouncement(m, d, a, t, r, e, tr, rr):
             elif s == vals[5]:
                 out += tr.mention
             elif s == vals[6]: 
-                out += str(m.created_at.now(tz=datetime.timezone(-datetime.timedelta(hours=4)))).split()[0]
+                out += str(m.created_at.now(tz=datetime.timezone(-datetime.timedelta(hours=4))).strftime('%m/%d/%Y')).split()[0]
             else:
                 return None
             s = ''

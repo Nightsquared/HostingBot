@@ -25,16 +25,25 @@ async def CommandsRespond(messagearray, message):
         for i in messagearray[3:]:
             s += i.replace('\\n', '\n') + " "
         messagedict[guildID].update({messagearray[2]:s})
+        await message.channel.send('Command added.')
     elif messagearray[1].lower() == 'list':
         m = ''
         for i in messagedict[guildID].keys():
             m += '!' + i + '\n'
+            if len(m)> 1500:
+                await message.channel.send(m)
+                m = ''
         if m == '':
             m = 'No custom commands'
         await message.channel.send(m)
     elif messagearray[1].lower() == 'remove':
         for i in messagearray[2:]:
-            del messagedict[guildID][i]
+            try:
+                text = messagedict[guildID][i]
+                del messagedict[guildID][i]
+                await message.channel.send("Removed the command `"+ i + "` with text: `" + text + '`.')
+            except:
+                await message.channel.send('There did not appear to be a command called `' + i + '`.')
     elif messagearray[1].lower() == 'write' and botadmin(message.author):
         write()
 async def Command(message):

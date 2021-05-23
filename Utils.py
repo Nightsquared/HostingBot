@@ -1,6 +1,7 @@
 import random
 import discord
 from Functions import botadmin
+
 async def setPerms(message, role, overwrites):
     await message.channel.set_permissions(role, overwrite = overwrites)
     
@@ -13,6 +14,13 @@ async def UtilsRespond(messagearray, message):
     
     if messagearray[1].lower() == 'channels' and message.author.guild_permissions.administrator:
         await message.channel.send(str(len(message.guild.channels)))
+        
+    if messagearray[1].lower() == 'move' and message.author.guild_permissions.administrator:
+        if messagearray[2] is None:
+            await message.channel.send('Invalid. First argument is the Category')
+        else:
+            category = discord.utils.get(message.guild.channels, name=messagearray[2])
+            await message.channel.edit(category=category)
         
     if messagearray[1].lower() == 'perm' and message.author.guild_permissions.administrator:
         if messagearray[2].lower() == 'read':
@@ -38,7 +46,7 @@ async def UtilsRespond(messagearray, message):
                 num = 4
             s1 = 'First set: '
             s2 = 'Second set: '
-            choices = list(range(0, 11))
+            choices = list(range(1, 11))
             for i in range(num):
                 n1 = random.choice(choices)
                 n2 = random.choice(choices)
@@ -106,4 +114,7 @@ async def UtilsRespond(messagearray, message):
                 pass
         for i in range(start, end+1):
             await message.channel.send(str(i))
+
+    if messagearray[1].lower() == 'error':
+        assert 1 == 0
                 

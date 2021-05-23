@@ -34,6 +34,7 @@ class Battle:
     def __init__(self, guild):
         self.Battlefield = [] #Battlefield[x][y] for individual room
         self.BattlePlayers = []
+        self.BattleNPCs = []
         self.BattleCategory = []
         self.AnnouncementsChannel = None
         self.width = 0
@@ -51,6 +52,7 @@ class Battle:
         self.recordingtime = 0
         self.colors = list(ImageColor.colormap.keys())#grabs a list of colors from the imagecolor module
         self.recording = False
+        self.bots = {}
         
     def reset(self):#yes, this really exists. I'm sorry.
         self.Battlefield = []
@@ -137,6 +139,7 @@ class Room:
         self.y = Y
         self.poisoned = False
         self.customobject = None
+        self.npclist = []
         
 class Player:
     maxhealth = 20
@@ -164,7 +167,7 @@ class Player:
         else:
             self.colorstring = 'random'
             self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        
+            
     async def enter(self, lastroom = None):
         Battlefield = self.battle.Battlefield
         self.room = Battlefield[self.x][self.y]
@@ -190,6 +193,67 @@ class Player:
         for m in self.messages:
             await m.delete()
         
+class NPC(Player):
+    def __init__(self, X, Y, User, BAttle, health = 20):
+        self.battle = BAttle
+        self.map = False
+        self.health = health
+        self.room = self.battle.Battlefield[X][Y]
+        self.user = User
+        self.bot = BAttle.bots[User]
+        self.x = X
+        self.y = Y
+        self.inventory = []
+        self.messages = []
+        self.alive = True
+        self.poisonticks = 0
+        if len(self.battle.colors) > 0:
+            self.colorstring = random.choice(self.battle.colors)
+            self.battle.colors.remove(self.colorstring)
+            self.color = ImageColor.getrgb(self.colorstring)
+        else:
+            self.colorstring = 'random'
+            self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+    
+    async def enter(self, lastroom = None):
+        Battlefield = self.battle.Battlefield
+        self.room = Battlefield[self.x][self.y]
+        if not lastroom == None:
+            remove = True
+            lastroom.playerlist.remove(self)
+            lastroom.npclist.remove(self)
+            for i in lastroom.npclist:
+                if i.user == self.user:
+                    remove = False
+            if remove:
+                await lastroom.channel.set_permissions(self.user, read_messages=False, send_messages=False, read_message_history=False)
+        await self.room.channel.set_permissions(self.user, read_messages=True, send_messages=True, read_message_history=True)
+        self.room.playerlist.append(self)
+        self.room.npclist.append(self)
+        for m in self.messages:
+            await m.delete()
+        self.messages = []
+        
+    async def killed(self, weapon, message, messagearray, attacker, source):
+        self.alive = False
+        self.battle.BattlePlayers.remove(self)
+        self.battle.BattleNPCs.remove(self)
+        self.room.playerlist.remove(self)
+        self.room.npclist.remove(self)
+        AnnouncementsChannel = self.battle.AnnouncementsChannel
+        for item in self.inventory:
+            self.room.itemlist.append(item)
+        await self.room.channel.send(self.user.mention + " has been slain.")
+        await AnnouncementsChannel.send(self.user.mention + " has been slain.")
+        remove = True
+        for i in self.room:
+            if i.user == self.user:
+                remove = False
+            if remove:
+                await self.room.channel.set_permissions(self.user, read_messages=False, send_messages=False, read_message_history=False)
+        for m in self.messages:
+            await m.delete()
+    
 class Item:
     name = ""
     def __init__(self, BAttle):
@@ -989,6 +1053,20 @@ async def BattleRespond(messagearray, message):
             BattlePlayers.append(Player(random.randrange(0, width), random.randrange(0, height), message.author, battle))
             await BattlePlayers[-1].enter()
             
+    if messagearray[1].lower() == 'registernpc' and message.author.guild_permissions.administrator:
+        if len(message.mentions) > 0:
+            for user in message.mentions:
+                BattlePlayers.append(NPC(random.randrange(0, width), random.randrange(0, height), user, battle))
+                BattlePlayers.append(BattlePlayers[-1])
+                print(str(BattlePlayers[-1].x) + ", " + str(BattlePlayers[-1].y))
+                #await AnnouncementsChannel.set_permissions(user, read_messages=True, send_messages=False, read_message_history=True)
+                await BattlePlayers[-1].enter()
+                
+    if messagearray[1].lower() == 'activatebot' and message.author.guild_permissions.administrator:
+        intents = discord.Intents(messages=True)
+        for token in messagearray[2:]:
+            pass
+            
     if messagearray[1].lower() == 'registerat' and message.author.guild_permissions.administrator:
         loclist = []
         for i in messagearray:
@@ -1024,7 +1102,7 @@ async def BattleRespond(messagearray, message):
         #for sorting the file names properly
         dirsize = getFolderSize(pathIn)
         
-        if dirsize > 4000000:
+        if dirsize > 500000:#if this is to large the bot might crash
             shutil.make_archive('battleimages', 'zip', pathIn)
             try:
                 await message.channel.send(file = discord.File('battleimages.zip'))
@@ -1049,8 +1127,8 @@ async def BattleRespond(messagearray, message):
         out.release()
         await message.channel.send(file = discord.File(pathOut))
         os.remove(pathOut)
-        shutil.rmtree(pathIn)
-        
+        shutil.rmtree(pathIn)   
+    
     if messagearray[1].lower() == 'poison' and message.author.guild_permissions.administrator:
         for i in messagearray[2:]:
             battle.stagetimes.append(int(i))
