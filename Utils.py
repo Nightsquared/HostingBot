@@ -1,13 +1,15 @@
 import random
 import discord
 from Functions import botadmin
+import datetime
 
 async def setPerms(message, role, overwrites):
     await message.channel.set_permissions(role, overwrite = overwrites)
     
 async def UtilsRespond(messagearray, message):
     if messagearray[1].lower() == 'ping':
-        await message.channel.send("Response")
+        await message.channel.send(message.created_at-datetime.datetime.now())
+        #await message.channel.send("Response")
         
     if messagearray[1].lower() == 'choose':
         await message.channel.send(random.choice(messagearray[2:]))
